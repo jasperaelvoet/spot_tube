@@ -1,2 +1,2 @@
 # spot_tube
-under development
+Download spotify songs trough YouTube.
