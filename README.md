@@ -1,23 +1,30 @@
 > # spot_tube
 [![GitHub release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases)
 # Download spotify songs trough YouTube.
-#### how the code works:
-* 1: asks user for required info
-* 2: gets song meta-data trough Spotify API
-* 3: uses that meta-data to find the song on YouTube
-* 4: downloads the song if not already installed
-* 5: adds mp3 meta-data and cover art
-* 6: moves song to final directory
-#### dependencies:
+## How the code works:
+* 1: Asks user for required info
+* 2: Gets song meta-data trough Spotify API
+* 3: Uses that meta-data to find the song on YouTube
+* 4: Downloads the song if not already installed
+* 5: Adds mp3 meta-data and cover art
+* 6: Moves song to final directory
+## Dependencies:
 * ffmpeg (add to path)
 * ffmprobe (add to path)
-## usage:
+* Spotify api client
+## Getting access to the spotify api:
+* 1: Go to the <a id="raw-url" href="https://developer.spotify.com/dashboard/">Spotify developer dashboard</a>
+* 2: Log in with your Spotify account
+* 3: Click on create an app and fill in the app name and description
+* 4: On the left, click on show client secret
+* 5: Input your client id and secret in the app
+## Usage:
 #### release build (recommended):
-* 1: download the latest release <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/releases">here</a>
-* 2: extract zip
-* 3: run main.exe
+* 1: Download the latest release <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/releases">here</a>
+* 2: Extract zip
+* 3: Run main.exe
 #### from source code:
 * 1: <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/archive/refs/heads/master.zip">Download source code</a>
-* 2: extract zip
-* 3: install libraries
-* 4: run main.py
+* 2: Extract zip
+* 3: Install libraries
+* 4: Run main.py
