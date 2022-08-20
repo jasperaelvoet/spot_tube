@@ -281,11 +281,12 @@ class App(tk.Tk):
             if grid_move_delay >= 4 and song_list.index(song_pair) + self.grid_row_pos > 8:
                 self.move_grid_up()
 
-            threading.Thread(target=song_pair[0].download_song).start()
+            threading.Thread(target=song_pair[0].download_song, daemon=True).start()
 
             while not song_pair[0].is_installed:
                 song_pair[1].config(text=song_pair[0].status)
-
+            time.sleep(0.1)
+            song_pair[1].config(text=song_pair[0].status)
             grid_move_delay += 1
 
 
