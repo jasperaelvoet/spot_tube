@@ -339,8 +339,6 @@ class Song:
         video_search = VideosSearch(f'{out_name} (audio)', limit=1)
         video_link = video_search.result()['result'][0]['link']
 
-        print(app.audio_quality.get())
-
         ydl_opts = {
             'postprocessors': [{'key': 'FFmpegExtractAudio',
                                 'preferredcodec': 'mp3', 'preferredquality': app.audio_quality.get()}],
