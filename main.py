@@ -1,14 +1,15 @@
-import tkinter as tk
-import tekore
 import os
 import time
 import threading
 from sys import platform
+import tkinter as tk
+import tekore
 from youtubesearchpython import VideosSearch
 import yt_dlp
-import urllib
+from urllib import request
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
+
 
 class App(tk.Tk):
     def __init__(self):
@@ -72,6 +73,7 @@ class App(tk.Tk):
     def _set_path(self):
         for widgets in self.winfo_children():
             widgets.destroy()
+
         self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
         self.text.insert("1.0", "set up paths")
         self.text['state'] = 'disabled'
@@ -88,7 +90,7 @@ class App(tk.Tk):
         self.path_input["textvariable"] = self.path_input.contents
 
         self.test_path_button = \
-            tk.Button(text="connect", bg="blue", fg="white", activebackground="blue4",
+            tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
                       activeforeground="white", height=1, width=25, command=self._test_path)
         self.test_path_button.grid(row=3, column=0, columnspan=2, pady=10)
 
@@ -129,35 +131,94 @@ class App(tk.Tk):
                       activeforeground="white", height=1, width=25, command=self._get_songs)
         self.download_songs_button.grid(row=3, column=0, columnspan=2, pady=10)
 
+    def move_grid_up(self):
+        self.grid_row_pos -= 1
+
+        widget_id: int = 0
+        for widget in self.winfo_children():
+            if widget_id in self.row.keys():
+                self.row[widget_id] = self.row.get(widget_id) - 1
+            else:
+                self.row[widget_id] = widget.grid_info()["row"] - 1
+            widget_id += 1
+
+        for key, value in reversed(self.row.items()):
+            if value < 0:
+                self.winfo_children()[key].configure(fg='gray')
+                self.winfo_children()[key].grid(row=0)
+            else:
+                self.winfo_children()[key].configure(fg='black')
+                self.winfo_children()[key].grid(row=value)
+
+        print(self.row.items())
+
+    def move_grid_down(self):
+        self.grid_row_pos += 1
+
+        widget_id: int = 0
+        for widget in self.winfo_children():
+            if widget_id in self.row.keys():
+                self.row[widget_id] = self.row.get(widget_id) + 1
+            else:
+                self.row[widget_id] = widget.grid_info()["row"] + 1
+            widget_id += 1
+
+        for key, value in reversed(self.row.items()):
+            if value < 0:
+                self.winfo_children()[key].configure(fg='gray')
+                self.winfo_children()[key].grid(row=0)
+            else:
+                self.winfo_children()[key].configure(fg='black')
+                self.winfo_children()[key].grid(row=value)
+
+        print(self.row.items())
+
     def _get_songs(self):
         self.song_links_list = self.song_links.get("1.0", "end-1c").splitlines()
 
-        for widgets in self.winfo_children():
+        for widgets in reversed(self.winfo_children()):
             widgets.destroy()
 
         threading.Thread(target=self._song_download_handler, daemon=True).start()
 
     def _song_download_handler(self):
+        self.grid_row_pos = 0
         song_list: list = []
+
+        self.row = {}
 
         for song_link in self.song_links_list:
             song = Song(song_link)
 
-            self.text = tk.Label(width=30, height=1, bg='gray', bd=0, fg='black',
-                                 text=f'{song.track_artist} - {song.track_name}')
-            self.text.grid(row=self.song_links_list.index(song_link), column=0, padx=5, pady=10)
+            text = tk.Label(width=30, height=1, bg='gray', bd=0, fg='black',
+                            text=f'{song.track_artist} - {song.track_name}')
+            text.grid(row=self.song_links_list.index(song_link) + self.grid_row_pos, column=0, padx=5, pady=10)
 
             song_status_text = tk.Label(width=50, height=1, bg='gray', bd=0, fg='black',
                                         text=song.status)
-            song_status_text.grid(row=self.song_links_list.index(song_link), column=1, padx=5, pady=10)
+            song_status_text.grid(row=self.song_links_list.index(song_link) + self.grid_row_pos,
+                                  column=1, padx=5, pady=10)
 
             song_list.append([song, song_status_text])
 
-        for song, song_status in song_list:
-            threading.Thread(target=song.download_song).start()
-            while not song.is_installed:
-                song_status.config(text=song.status)
-                time.sleep(0.01)
+            if self.song_links_list.index(song_link) + self.grid_row_pos > 10:
+                self.move_grid_up()
+        time.sleep(5)
+
+        for i in range(0, self.grid_row_pos, -1):
+            self.move_grid_down()
+
+        time.sleep(5)
+
+        grid_move_delay: int = 0
+        for song_pair in song_list:
+            if grid_move_delay >= 4 and song_list.index(song_pair) + self.grid_row_pos > 8:
+                self.move_grid_up()
+            threading.Thread(target=song_pair[0].download_song).start()
+            while not song_pair[0].is_installed:
+                song_pair[1].config(text=song_pair[0].status)
+
+            grid_move_delay += 1
 
 class Song:
     def __init__(self, song_link):
@@ -189,6 +250,11 @@ class Song:
         out_name = f'{self.track_artist} - {self.track_name}'
         out_name = out_name.replace("/", "")
         out_name = out_name.replace("\\", "")
+
+        if not self.is_usable:
+            time.sleep(0.1)
+            self.is_installed = True
+            return
 
         if os.path.exists(app.out_dir + out_name + r".mp3"):
             self.status = "already installed"
@@ -223,18 +289,19 @@ class Song:
         tag.track_num = self.track_num
 
         self.status = "adding cover image"
-        urllib.request.urlretrieve(self.cover_art_url, "cover.jpg")
+        request.urlretrieve(self.cover_art_url, "cover.jpg")
         tag.images.set(ImageFrame.FRONT_COVER, open('cover.jpg', 'rb').read(), 'image/jpeg')
         os.remove("cover.jpg")
 
         tag.save()
 
         self.status = "moving song to final folder"
-        os.rename('temp_song.mp3', app.out_dir + out_name + r".mp3")
+        os.rename("temp_song.mp3", app.out_dir + out_name + r".mp3")
 
         self.status = "installed"
         time.sleep(0.1)
         self.is_installed = True
+        return
 
 
 app = App()
