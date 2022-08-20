@@ -1,6 +1,6 @@
 > # spot_tube
 [![GitHub release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases)
-# Download spotify songs trough YouTube.
+# Download songs saved on Spotify via YouTube.
 ## How the code works:
 * 1: Asks user for required info
 * 2: Gets song meta-data trough Spotify API
