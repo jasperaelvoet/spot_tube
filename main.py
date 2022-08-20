@@ -9,7 +9,16 @@ import yt_dlp
 from urllib import request
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
+import json
 
+def create_config_file():
+    if os.path.exists("config.json"):
+        return
+
+    data = {"id": "", "secret": ""}
+
+    with open('config.json', 'w') as f:
+        json.dump(data, f)
 
 class App(tk.Tk):
     def __init__(self):
@@ -22,6 +31,7 @@ class App(tk.Tk):
         self.configure(bg='gray')
         self.iconbitmap('icon.ico')
         self.resizable(False, False)
+        create_config_file()
         self._create_spotify_api_widgets()
 
     def _create_spotify_api_widgets(self):
@@ -39,6 +49,8 @@ class App(tk.Tk):
         self.client_id_input.grid(row=1, column=1, padx=5, pady=2)
         self.client_id_input.contents = tk.StringVar()
         self.client_id_input["textvariable"] = self.client_id_input.contents
+        with open('config.json', 'r') as f:
+            self.client_id_input.contents.set(json.load(f)['id'])
 
         self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
         self.text.insert("1.0", "client secret: ")
@@ -49,6 +61,24 @@ class App(tk.Tk):
         self.client_secret_input.grid(row=2, column=1, padx=5, pady=2)
         self.client_secret_input.contents = tk.StringVar()
         self.client_secret_input["textvariable"] = self.client_secret_input.contents
+        with open('config.json', 'r') as f:
+            self.client_secret_input.contents.set(json.load(f)['secret'])
+
+        self.save_id_value = tk.IntVar()
+        self.save_id_checkbox = tk.Checkbutton(text="save client id", bg="gray", activebackground="gray",
+                                               variable=self.save_id_value)
+        self.save_id_checkbox.grid(row=1, column=2, padx=5, pady=2)
+        with open('config.json', 'r') as f:
+            if not json.load(f)['id'] == "":
+                self.save_id_checkbox.select()
+
+        self.save_secret_value = tk.IntVar()
+        self.save_secret_checkbox = tk.Checkbutton(text="save client secret", bg="gray", activebackground="gray",
+                                                   variable=self.save_secret_value)
+        self.save_secret_checkbox.grid(row=2, column=2, padx=5, pady=2)
+        with open('config.json', 'r') as f:
+            if not json.load(f)['secret'] == "":
+                self.save_secret_checkbox.select()
 
         self.connect_to_spotify_api_button = \
             tk.Button(text="connect", bg="blue", fg="white", activebackground="blue4",
@@ -62,6 +92,22 @@ class App(tk.Tk):
 
         client_id: str = self.client_id_input.contents.get()
         client_secret: str = self.client_secret_input.contents.get()
+
+        with open('config.json', 'r') as f:
+            data = json.load(f)
+
+        if self.save_id_value.get() == 1:
+            data["id"] = client_id
+        else:
+            data["id"] = ""
+
+        if self.save_secret_value.get() == 1:
+            data["secret"] = client_secret
+        else:
+            data["secret"] = ""
+
+        with open('config.json', 'w') as f:
+            json.dump(data, f)
 
         try:
             app_token = tekore.request_client_token(client_id, client_secret)
@@ -214,6 +260,7 @@ class App(tk.Tk):
                 song_pair[1].config(text=song_pair[0].status)
 
             grid_move_delay += 1
+
 
 class Song:
     def __init__(self, song_link):
