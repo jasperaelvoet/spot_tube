@@ -213,10 +213,8 @@ class App(tk.Tk):
 
         for key, value in reversed(self.row.items()):
             if value < 0:
-                self.winfo_children()[key].configure(fg='gray')
-                self.winfo_children()[key].grid(row=0)
+                self.winfo_children()[key].grid_remove()
             else:
-                self.winfo_children()[key].configure(fg='black')
                 self.winfo_children()[key].grid(row=value)
 
     def move_grid_down(self):
@@ -232,10 +230,8 @@ class App(tk.Tk):
 
         for key, value in reversed(self.row.items()):
             if value < 0:
-                self.winfo_children()[key].configure(fg='gray')
-                self.winfo_children()[key].grid(row=0)
+                self.winfo_children()[key].grid_remove()
             else:
-                self.winfo_children()[key].configure(fg='black')
                 self.winfo_children()[key].grid(row=value)
 
     def _get_songs(self):
