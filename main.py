@@ -150,8 +150,6 @@ class App(tk.Tk):
                 self.winfo_children()[key].configure(fg='black')
                 self.winfo_children()[key].grid(row=value)
 
-        print(self.row.items())
-
     def move_grid_down(self):
         self.grid_row_pos += 1
 
@@ -170,8 +168,6 @@ class App(tk.Tk):
             else:
                 self.winfo_children()[key].configure(fg='black')
                 self.winfo_children()[key].grid(row=value)
-
-        print(self.row.items())
 
     def _get_songs(self):
         self.song_links_list = self.song_links.get("1.0", "end-1c").splitlines()
@@ -203,18 +199,17 @@ class App(tk.Tk):
 
             if self.song_links_list.index(song_link) + self.grid_row_pos > 10:
                 self.move_grid_up()
-        time.sleep(5)
 
         for i in range(0, self.grid_row_pos, -1):
             self.move_grid_down()
-
-        time.sleep(5)
 
         grid_move_delay: int = 0
         for song_pair in song_list:
             if grid_move_delay >= 4 and song_list.index(song_pair) + self.grid_row_pos > 8:
                 self.move_grid_up()
+
             threading.Thread(target=song_pair[0].download_song).start()
+
             while not song_pair[0].is_installed:
                 song_pair[1].config(text=song_pair[0].status)
 
