@@ -28,3 +28,5 @@
 * 2: Extract zip
 * 3: Install libraries
 * 4: Run main.py
+## Known issues:
+* app might become unresponsive while downloading song
