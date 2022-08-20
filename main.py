@@ -150,10 +150,22 @@ class App(tk.Tk):
 
         self.test_path_button = \
             tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
-                      activeforeground="white", height=1, width=25, command=self._test_path)
+                      activeforeground="white", height=1, width=25, command=self._check_settings)
         self.test_path_button.grid(row=3, column=0, columnspan=2, pady=10)
 
-    def _test_path(self):
+        self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
+        self.text.insert("1.0", "audio quality")
+        self.text['state'] = 'disabled'
+        self.text.grid(row=2, column=0, padx=5, pady=2)
+
+        self.audio_quality = tk.StringVar(self, value='256')
+
+        options = ['32', '96', '128', '192', '256', '320']
+
+        self.audio_quality_option_menu = tk.OptionMenu(self, self.audio_quality, *options)
+        self.audio_quality_option_menu .grid(row=2, column=1)
+
+    def _check_settings(self):
         self.path_test_text = tk.Label(width=45, height=1, bg='gray', bd=0, fg='gray')
         self.path_test_text.config(text="testing path...")
         self.path_test_text.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
@@ -327,8 +339,11 @@ class Song:
         video_search = VideosSearch(f'{out_name} (audio)', limit=1)
         video_link = video_search.result()['result'][0]['link']
 
+        print(app.audio_quality.get())
+
         ydl_opts = {
-            'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '320'}],
+            'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                'preferredcodec': 'mp3', 'preferredquality': app.audio_quality.get()}],
             'outtmpl': 'temp_song',
         }
 
