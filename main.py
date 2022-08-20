@@ -11,14 +11,16 @@ from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
 import json
 
+
 def create_config_file():
     if os.path.exists("config.json"):
         return
 
-    data = {"id": "", "secret": ""}
+    data = {"id": "", "secret": "", "path": ""}
 
     with open('config.json', 'w') as f:
         json.dump(data, f)
+
 
 class App(tk.Tk):
     def __init__(self):
@@ -135,6 +137,17 @@ class App(tk.Tk):
         self.path_input.contents = tk.StringVar()
         self.path_input["textvariable"] = self.path_input.contents
 
+        with open('config.json', 'r') as f:
+            self.path_input.contents.set(json.load(f)['path'])
+
+        self.save_path_value = tk.IntVar()
+        self.save_path_checkbox = tk.Checkbutton(text="save path", bg="gray", activebackground="gray",
+                                                 variable=self.save_path_value)
+        self.save_path_checkbox.grid(row=1, column=2, padx=5, pady=2)
+        with open('config.json', 'r') as f:
+            if not json.load(f)['path'] == "":
+                self.save_path_checkbox.select()
+
         self.test_path_button = \
             tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
                       activeforeground="white", height=1, width=25, command=self._test_path)
@@ -146,6 +159,16 @@ class App(tk.Tk):
         self.path_test_text.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
 
         self.out_dir: str = self.path_input.contents.get()
+
+        with open('config.json', 'r') as f:
+            data = json.load(f)
+        if self.save_path_value.get() == 1:
+            data["path"] = self.out_dir
+        else:
+            data["path"] = ""
+
+        with open('config.json', 'w') as f:
+            json.dump(data, f)
 
         if not self.out_dir[-1] == ("\\" or "/"):
             if platform == "win32":
