@@ -25,7 +25,7 @@ def create_config_file():
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Download Song")
+        self.title("spot_tube")
         self.canvas = None
         self.color = "Black"
         self.thickness = 1
