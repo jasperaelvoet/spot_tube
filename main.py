@@ -214,37 +214,33 @@ class App(tk.Tk):
 
     def move_grid_up(self):
         self.grid_row_pos -= 1
-
         widget_id: int = 0
+
         for widget in self.winfo_children():
             if widget_id in self.row.keys():
                 self.row[widget_id] = self.row.get(widget_id) - 1
             else:
                 self.row[widget_id] = widget.grid_info()["row"] - 1
-            widget_id += 1
-
-        for key, value in reversed(self.row.items()):
-            if value < 0:
-                self.winfo_children()[key].grid_remove()
+            if self.row[widget_id] < 0:
+                widget.grid_remove()
             else:
-                self.winfo_children()[key].grid(row=value)
+                widget.grid(row=self.row[widget_id])
+            widget_id += 1
 
     def move_grid_down(self):
         self.grid_row_pos += 1
-
         widget_id: int = 0
+
         for widget in self.winfo_children():
             if widget_id in self.row.keys():
                 self.row[widget_id] = self.row.get(widget_id) + 1
             else:
                 self.row[widget_id] = widget.grid_info()["row"] + 1
-            widget_id += 1
-
-        for key, value in reversed(self.row.items()):
-            if value < 0:
-                self.winfo_children()[key].grid_remove()
+            if self.row[widget_id] < 0:
+                widget.grid_remove()
             else:
-                self.winfo_children()[key].grid(row=value)
+                widget.grid(row=self.row[widget_id])
+            widget_id += 1
 
     def _get_songs(self):
         self.song_links_list = self.song_links.get("1.0", "end-1c").splitlines()
