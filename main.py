@@ -331,42 +331,65 @@ class Song:
             self.is_installed = True
             return
 
-        self.status = "searching on youtube"
-        video_search = VideosSearch(f'{out_name} (audio)', limit=1)
-        video_link = video_search.result()['result'][0]['link']
+        try:
+            self.status = "searching on youtube"
+            video_search = VideosSearch(f'{out_name} (audio)', limit=1)
+            video_link = video_search.result()['result'][0]['link']
+        except:
+            self.status = "failed to search song"
+            time.sleep(0.1)
+            self.is_installed = True
+            return
 
-        ydl_opts = {
-            'postprocessors': [{'key': 'FFmpegExtractAudio',
-                                'preferredcodec': 'mp3', 'preferredquality': app.audio_quality.get()}],
-            'outtmpl': 'temp_song',
-        }
+        try:
+            self.status = "downloading"
+            ydl_opts = {
+                'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                    'preferredcodec': 'mp3', 'preferredquality': app.audio_quality.get()}],
+                'outtmpl': 'temp_song',
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([video_link])
+        except:
+            self.status = "failed to download song"
+            time.sleep(0.1)
+            self.is_installed = True
+            return
 
-        self.status = "downloading"
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_link])
+        try:
+            self.status = "adding id3 tags"
+            song = "temp_song.mp3"
+            tag = id3.Tag()
+            tag.parse(song)
+            tag.artist = self.track_artist
+            tag.album = self.album_name
+            tag.title = self.track_name
+            tag.album_artist = self.album_artist
+            tag.artist_url = self.artist_url
+            tag.release_date = self.release_date
+            tag.disc_num = self.disc_num
+            tag.track_num = self.track_num
 
-        self.status = "adding id3 tags"
-        song = "temp_song.mp3"
-        tag = id3.Tag()
-        tag.parse(song)
-        tag.artist = self.track_artist
-        tag.album = self.album_name
-        tag.title = self.track_name
-        tag.album_artist = self.album_artist
-        tag.artist_url = self.artist_url
-        tag.release_date = self.release_date
-        tag.disc_num = self.disc_num
-        tag.track_num = self.track_num
+            self.status = "adding cover image"
+            request.urlretrieve(self.cover_art_url, "cover.jpg")
+            tag.images.set(ImageFrame.FRONT_COVER, open('cover.jpg', 'rb').read(), 'image/jpeg')
+            os.remove("cover.jpg")
 
-        self.status = "adding cover image"
-        request.urlretrieve(self.cover_art_url, "cover.jpg")
-        tag.images.set(ImageFrame.FRONT_COVER, open('cover.jpg', 'rb').read(), 'image/jpeg')
-        os.remove("cover.jpg")
+            tag.save()
+        except:
+            self.status = "failed to add id3 tags"
+            time.sleep(0.1)
+            self.is_installed = True
+            return
 
-        tag.save()
-
-        self.status = "moving song to final folder"
-        os.rename("temp_song.mp3", app.out_dir + out_name + r".mp3")
+        try:
+            self.status = "moving song to final folder"
+            os.rename("temp_song.mp3", app.out_dir + out_name + r".mp3")
+        except:
+            self.status = "failed to move song to final directory"
+            time.sleep(0.1)
+            self.is_installed = True
+            return
 
         self.status = "installed"
         time.sleep(0.1)
