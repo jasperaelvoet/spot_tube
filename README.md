@@ -19,11 +19,11 @@
 * 4: On the left, click on show client secret
 * 5: Input your client id and secret in the app
 ## Usage:
-#### release build (recommended):
+#### Release build (recommended) (Windows only):
 * 1: Download the latest release <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/releases">here</a>
 * 2: Extract zip
 * 3: Run main.exe
-#### from source code:
+#### From source code:
 * 1: <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/archive/refs/heads/master.zip">Download source code</a>
 * 2: Extract zip
 * 3: Install libraries
