@@ -1,5 +1,5 @@
 > # spot_tube
-[![GitHub release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases)
+[![GitHub release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases/latest)
 # Download songs saved on Spotify via YouTube.
 ## How the code works:
 * 1: Asks user for required info
@@ -20,7 +20,7 @@
 * 5: Input your client id and secret in the app
 ## Usage:
 #### Release build (recommended) (Windows only):
-* 1: Download the latest release <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/releases">here</a>
+* 1: Download the latest release <a id="raw-url" href="https://github.com/jasperaelvoet/spot_tube/releases/latest">here</a>
 * 2: Extract zip
 * 3: Run main.exe
 #### From source code:
