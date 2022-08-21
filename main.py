@@ -221,10 +221,13 @@ class App(tk.Tk):
                 self.row[widget_id] = self.row.get(widget_id) - 1
             else:
                 self.row[widget_id] = widget.grid_info()["row"] - 1
-            if self.row[widget_id] < 0:
+            row = self.row[widget_id]
+            if row < 0:
+                widget.grid_remove()
+            elif row > 15:
                 widget.grid_remove()
             else:
-                widget.grid(row=self.row[widget_id])
+                widget.grid(row=row)
             widget_id += 1
 
     def move_grid_down(self):
@@ -236,10 +239,13 @@ class App(tk.Tk):
                 self.row[widget_id] = self.row.get(widget_id) + 1
             else:
                 self.row[widget_id] = widget.grid_info()["row"] + 1
-            if self.row[widget_id] < 0:
+            row = self.row[widget_id]
+            if row < 0:
+                widget.grid_remove()
+            elif row > 15:
                 widget.grid_remove()
             else:
-                widget.grid(row=self.row[widget_id])
+                widget.grid(row=row)
             widget_id += 1
 
     def _get_songs(self):
