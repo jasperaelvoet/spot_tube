@@ -9,6 +9,7 @@ import yt_dlp
 from urllib import request
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
+from pydub import AudioSegment
 import json
 
 
@@ -128,7 +129,7 @@ class App(tk.Tk):
         self.text.grid(row=0, column=0, columnspan=2, pady=10)
 
         self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "path to output folder")
+        self.text.insert("1.0", "path to output folder:")
         self.text['state'] = 'disabled'
         self.text.grid(row=1, column=0, padx=5, pady=2)
 
@@ -151,10 +152,10 @@ class App(tk.Tk):
         self.test_path_button = \
             tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
                       activeforeground="white", height=1, width=25, command=self._check_settings)
-        self.test_path_button.grid(row=3, column=0, columnspan=2, pady=10)
+        self.test_path_button.grid(row=4, column=0, columnspan=2, pady=10)
 
         self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "audio quality")
+        self.text.insert("1.0", "audio quality:")
         self.text['state'] = 'disabled'
         self.text.grid(row=2, column=0, padx=5, pady=2)
 
@@ -164,6 +165,16 @@ class App(tk.Tk):
 
         self.audio_quality_option_menu = tk.OptionMenu(self, self.audio_quality, *options)
         self.audio_quality_option_menu .grid(row=2, column=1)
+
+        self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
+        self.text.insert("1.0", "normalize audio level:")
+        self.text['state'] = 'disabled'
+        self.text.grid(row=3, column=0, padx=5, pady=2)
+
+        self.normalize_audio_level_value = tk.IntVar()
+        self.normalize_audio_level_checkbox = tk.Checkbutton(text="(recommended)", bg="gray", activebackground="gray",
+                                                             variable=self.normalize_audio_level_value)
+        self.normalize_audio_level_checkbox.grid(row=3, column=1, padx=5, pady=2)
 
     def _check_settings(self):
         self.path_test_text = tk.Label(width=45, height=1, bg='gray', bd=0, fg='gray')
@@ -321,6 +332,16 @@ class Song:
             self.track_name = "n/a"
             self.is_usable = False
 
+    @staticmethod
+    def match_target_amplitude(sound, target_dBFS):
+        change_in_dBFS = target_dBFS - sound.dBFS
+        return sound.apply_gain(change_in_dBFS)
+
+    def normalize_audio_level(self):
+        sound = AudioSegment.from_file("temp_song.mp3", "mp3")
+        normalized_sound = self.match_target_amplitude(sound, -20.0)
+        normalized_sound.export("temp_song.mp3", format="mp3")
+
     def download_song(self):
         self.status = "checking if already installed"
         out_name = f'{self.track_artist} - {self.track_name}'
@@ -363,6 +384,17 @@ class Song:
             self.is_installed = True
             return
 
+        if app.normalize_audio_level_value.get() == 1:
+            try:
+                self.status = "normalizing audio level"
+                time.sleep(0.1)
+                self.normalize_audio_level()
+            except:
+                self.status = "failed to normalize audio level"
+                time.sleep(0.1)
+                self.is_installed = True
+                return
+
         try:
             self.status = "adding id3 tags"
             song = "temp_song.mp3"
@@ -388,6 +420,8 @@ class Song:
             time.sleep(0.1)
             self.is_installed = True
             return
+
+
 
         try:
             self.status = "moving song to final folder"
