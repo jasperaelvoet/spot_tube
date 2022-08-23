@@ -340,7 +340,7 @@ class Song:
     def normalize_audio_level(self):
         sound = AudioSegment.from_file("temp_song.mp3", "mp3")
         normalized_sound = self.match_target_amplitude(sound, -20.0)
-        normalized_sound.export("temp_song.mp3", format="mp3")
+        normalized_sound.export("temp_song.mp3", format="mp3", bitrate=app.audio_quality.get() + 'k')
 
     def download_song(self):
         self.status = "checking if already installed"
