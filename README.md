@@ -1,5 +1,7 @@
 > # spot_tube
-[![GitHub release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases/latest)
+[![release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases/latest)
+[![downloads](https://img.shields.io/github/downloads/jasperaelvoet/spot_tube/total)](https://github.com/jasperaelvoet/spot_tube/)  
+[![start](https://img.shields.io/github/stars/jasperaelvoet/spot_tube?style=social)](https://github.com/jasperaelvoet/spot_tube/stargazers)
 # Download songs saved on Spotify via YouTube.
 ## How the code works:
 * 1: Asks user for required info
