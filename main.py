@@ -277,7 +277,7 @@ class App(tk.Tk):
             song = Song(song_link)
 
             text = tk.Label(width=30, height=1, bg='gray', bd=0, fg='black',
-                            text=f'{song.track_artist} - {song.track_name}')
+                            text=f'{song.album_artist} - {song.track_name}')
             text.grid(row=self.song_links_list.index(song_link) + self.grid_row_pos, column=0, padx=5, pady=10)
 
             song_status_text = tk.Label(width=50, height=1, bg='gray', bd=0, fg='black',
@@ -314,6 +314,9 @@ class Song:
             song_track = app.spotify.track(song_link)
 
             self.track_artist = song_track.artists[0].name
+            for artists in song_track.artists[1:]:
+                self.track_artist += " & " + artists.name
+
             self.album_name = song_track.album.name
             self.track_name = song_track.name
             self.album_artist = song_track.album.artists[0].name
@@ -328,7 +331,7 @@ class Song:
 
         except tekore.BadRequest:
             self.status = "invalid id"
-            self.track_artist = "n/a"
+            self.album_artist = "n/a"
             self.track_name = "n/a"
             self.is_usable = False
 
@@ -344,7 +347,7 @@ class Song:
 
     def download_song(self):
         self.status = "checking if already installed"
-        out_name = f'{self.track_artist} - {self.track_name}'
+        out_name = f'{self.album_artist} - {self.track_name}'
         out_name = out_name.replace("/", "")
         out_name = out_name.replace("\\", "")
 
