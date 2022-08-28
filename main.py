@@ -164,7 +164,7 @@ class App(tk.Tk):
         options = ['32', '96', '128', '192', '256', '320']
 
         self.audio_quality_option_menu = tk.OptionMenu(self, self.audio_quality, *options)
-        self.audio_quality_option_menu .grid(row=2, column=1)
+        self.audio_quality_option_menu.grid(row=2, column=1)
 
         self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
         self.text.insert("1.0", "normalize audio level:")
@@ -211,11 +211,11 @@ class App(tk.Tk):
         for widgets in self.winfo_children():
             widgets.destroy()
 
-        self.text = tk.Text(bg='gray', bd=2, width=60, height=1, borderwidth=0)
-        self.text.insert("1.0", "enter your song links here, separated by enters")
+        self.text = tk.Text(bg='gray', bd=2, width=60, height=2, borderwidth=0)
+        self.text.insert("1.0", "enter your track/album/playlist \nlinks here, separated by enters")
         self.text.grid(row=1, column=0, pady=10, padx=10)
 
-        self.song_links = tk.Text(bg='white', bd=2, width=70, height=18)
+        self.song_links = tk.Text(bg='white', bd=2, width=70, height=16)
         self.song_links.grid(row=2, column=0, pady=10, padx=10)
 
         self.download_songs_button = \
@@ -260,12 +260,31 @@ class App(tk.Tk):
             widget_id += 1
 
     def _get_songs(self):
-        self.song_links_list = self.song_links.get("1.0", "end-1c").splitlines()
+        self.links_list = self.song_links.get("1.0", "end-1c").splitlines()
 
         for widgets in reversed(self.winfo_children()):
             widgets.destroy()
 
         threading.Thread(target=self._song_download_handler, daemon=True).start()
+
+    @staticmethod
+    def get_all_song_links(links):
+        song_ids = []
+        for link in links:
+            if "track" in link:
+                track_id = link.replace("https://open.spotify.com/track/", "")
+                song_ids.append(track_id)
+            if "album" in link:
+                album_id = link.replace("https://open.spotify.com/album/", "")
+                album = app.spotify.album(album_id)
+                for track in album.tracks.items:
+                    song_ids.append(track.id)
+            if "playlist" in link:
+                playlist_id = link.replace("https://open.spotify.com/playlist/", "")
+                playlist = app.spotify.playlist(playlist_id)
+                for track in playlist.tracks.items:
+                    song_ids.append(track.track.id)
+        return song_ids
 
     def _song_download_handler(self):
         self.grid_row_pos = 0
@@ -273,21 +292,23 @@ class App(tk.Tk):
 
         self.row = {}
 
-        for song_link in self.song_links_list:
+        self.song_id_list = self.get_all_song_links(self.links_list)
+
+        for song_link in self.song_id_list:
             song = Song(song_link)
 
             text = tk.Label(width=30, height=1, bg='gray', bd=0, fg='black',
                             text=f'{song.album_artist} - {song.track_name}')
-            text.grid(row=self.song_links_list.index(song_link) + self.grid_row_pos, column=0, padx=5, pady=10)
+            text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=0, padx=5, pady=10)
 
             song_status_text = tk.Label(width=50, height=1, bg='gray', bd=0, fg='black',
                                         text=song.status)
-            song_status_text.grid(row=self.song_links_list.index(song_link) + self.grid_row_pos,
+            song_status_text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos,
                                   column=1, padx=5, pady=10)
 
             song_list.append([song, song_status_text])
 
-            if self.song_links_list.index(song_link) + self.grid_row_pos > 10:
+            if self.song_id_list.index(song_link) + self.grid_row_pos > 10:
                 self.move_grid_up()
 
         for i in range(0, self.grid_row_pos, -1):
@@ -310,7 +331,6 @@ class App(tk.Tk):
 class Song:
     def __init__(self, song_link):
         try:
-            song_link = song_link.replace("https://open.spotify.com/track/", "")
             song_track = app.spotify.track(song_link)
 
             self.track_artist = song_track.artists[0].name
@@ -423,8 +443,6 @@ class Song:
             time.sleep(0.1)
             self.is_installed = True
             return
-
-
 
         try:
             self.status = "moving song to final folder"
