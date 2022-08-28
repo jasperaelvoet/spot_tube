@@ -345,6 +345,11 @@ class Song:
             self.cover_art_url = song_track.album.images[0].url
             self.disc_num = song_track.disc_number
             self.track_num = song_track.track_number
+
+            self.genre = app.spotify.artist(song_track.album.artists[0].id).genres[0]
+            for genre in app.spotify.artist(song_track.album.artists[0].id).genres[1:]:
+                self.genre += " & " + genre
+
             self.status = "waiting for download"
             self.is_usable = True
             self.is_installed = False
@@ -431,6 +436,7 @@ class Song:
             tag.release_date = self.release_date
             tag.disc_num = self.disc_num
             tag.track_num = self.track_num
+            tag.genre = self.genre
 
             self.status = "adding cover image"
             request.urlretrieve(self.cover_art_url, "cover.jpg")
