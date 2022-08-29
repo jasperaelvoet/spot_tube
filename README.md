@@ -32,3 +32,4 @@
 * 4: Run main.py
 ## Known issues:
 * app might become unresponsive while downloading song
+* some antivirus programs will block the exe since it is compilled using PyInstaller
