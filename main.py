@@ -294,6 +294,8 @@ class App(tk.Tk):
 
         self.song_id_list = self.get_all_song_links(self.links_list)
 
+        time.sleep(1)
+
         for song_link in self.song_id_list:
             song = Song(song_link)
 
@@ -310,6 +312,8 @@ class App(tk.Tk):
 
             if self.song_id_list.index(song_link) + self.grid_row_pos > 10:
                 self.move_grid_up()
+
+            time.sleep(.2)
 
         for i in range(0, self.grid_row_pos, -1):
             self.move_grid_down()
@@ -346,9 +350,12 @@ class Song:
             self.disc_num = song_track.disc_number
             self.track_num = song_track.track_number
 
-            self.genre = app.spotify.artist(song_track.album.artists[0].id).genres[0]
-            for genre in app.spotify.artist(song_track.album.artists[0].id).genres[1:]:
-                self.genre += " & " + genre
+            try:
+                self.genre = app.spotify.artist(song_track.album.artists[0].id).genres[0]
+                for genre in app.spotify.artist(song_track.album.artists[0].id).genres[1:]:
+                    self.genre += " & " + genre
+            except:
+                self.genre = "n/a"
 
             self.status = "waiting for download"
             self.is_usable = True
