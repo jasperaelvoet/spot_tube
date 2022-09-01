@@ -10,17 +10,7 @@ from urllib import request
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
 from pydub import AudioSegment
-import json
-
-
-def create_config_file():
-    if os.path.exists("config.json"):
-        return
-
-    data = {"id": "", "secret": "", "path": ""}
-
-    with open('config.json', 'w') as f:
-        json.dump(data, f)
+from save_handler import SaveHandler
 
 
 class App(tk.Tk):
@@ -34,7 +24,9 @@ class App(tk.Tk):
         self.configure(bg='gray')
         self.iconbitmap('icon.ico')
         self.resizable(False, False)
-        create_config_file()
+
+        self.save_handler = SaveHandler()
+
         self._create_spotify_api_widgets()
 
     def _create_spotify_api_widgets(self):
@@ -52,8 +44,9 @@ class App(tk.Tk):
         self.client_id_input.grid(row=1, column=1, padx=5, pady=2)
         self.client_id_input.contents = tk.StringVar()
         self.client_id_input["textvariable"] = self.client_id_input.contents
-        with open('config.json', 'r') as f:
-            self.client_id_input.contents.set(json.load(f)['id'])
+
+        if self.save_handler.has_save('id'):
+            self.client_id_input.contents.set(self.save_handler.get_save('id'))
 
         self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
         self.text.insert("1.0", "client secret: ")
@@ -64,24 +57,25 @@ class App(tk.Tk):
         self.client_secret_input.grid(row=2, column=1, padx=5, pady=2)
         self.client_secret_input.contents = tk.StringVar()
         self.client_secret_input["textvariable"] = self.client_secret_input.contents
-        with open('config.json', 'r') as f:
-            self.client_secret_input.contents.set(json.load(f)['secret'])
+
+        if self.save_handler.has_save('secret'):
+            self.client_secret_input.contents.set(self.save_handler.get_save('secret'))
 
         self.save_id_value = tk.IntVar()
         self.save_id_checkbox = tk.Checkbutton(text="save client id", bg="gray", activebackground="gray",
                                                variable=self.save_id_value)
         self.save_id_checkbox.grid(row=1, column=2, padx=5, pady=2)
-        with open('config.json', 'r') as f:
-            if not json.load(f)['id'] == "":
-                self.save_id_checkbox.select()
+
+        if self.save_handler.has_save('id'):
+            self.save_id_checkbox.select()
 
         self.save_secret_value = tk.IntVar()
         self.save_secret_checkbox = tk.Checkbutton(text="save client secret", bg="gray", activebackground="gray",
                                                    variable=self.save_secret_value)
         self.save_secret_checkbox.grid(row=2, column=2, padx=5, pady=2)
-        with open('config.json', 'r') as f:
-            if not json.load(f)['secret'] == "":
-                self.save_secret_checkbox.select()
+
+        if self.save_handler.has_save('secret'):
+            self.save_secret_checkbox.select()
 
         self.connect_to_spotify_api_button = \
             tk.Button(text="connect", bg="blue", fg="white", activebackground="blue4",
@@ -96,21 +90,15 @@ class App(tk.Tk):
         client_id: str = self.client_id_input.contents.get()
         client_secret: str = self.client_secret_input.contents.get()
 
-        with open('config.json', 'r') as f:
-            data = json.load(f)
-
         if self.save_id_value.get() == 1:
-            data["id"] = client_id
+            self.save_handler.set_save("id", client_id)
         else:
-            data["id"] = ""
+            self.save_handler.delete_save("id")
 
         if self.save_secret_value.get() == 1:
-            data["secret"] = client_secret
+            self.save_handler.set_save("secret", client_secret)
         else:
-            data["secret"] = ""
-
-        with open('config.json', 'w') as f:
-            json.dump(data, f)
+            self.save_handler.delete_save("secret")
 
         try:
             app_token = tekore.request_client_token(client_id, client_secret)
@@ -138,16 +126,16 @@ class App(tk.Tk):
         self.path_input.contents = tk.StringVar()
         self.path_input["textvariable"] = self.path_input.contents
 
-        with open('config.json', 'r') as f:
-            self.path_input.contents.set(json.load(f)['path'])
+        if self.save_handler.has_save('path'):
+            self.path_input.contents.set(self.save_handler.get_save('path'))
 
         self.save_path_value = tk.IntVar()
         self.save_path_checkbox = tk.Checkbutton(text="save path", bg="gray", activebackground="gray",
                                                  variable=self.save_path_value)
         self.save_path_checkbox.grid(row=1, column=2, padx=5, pady=2)
-        with open('config.json', 'r') as f:
-            if not json.load(f)['path'] == "":
-                self.save_path_checkbox.select()
+
+        if self.save_handler.has_save('path'):
+            self.save_path_checkbox.select()
 
         self.test_path_button = \
             tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
@@ -159,7 +147,11 @@ class App(tk.Tk):
         self.text['state'] = 'disabled'
         self.text.grid(row=2, column=0, padx=5, pady=2)
 
-        self.audio_quality = tk.StringVar(self, value='256')
+
+        if self.save_handler.has_save('audio_quality'):
+            self.audio_quality = tk.StringVar(self, value=self.save_handler.get_save('audio_quality'))
+        else:
+            self.audio_quality = tk.StringVar(self, value='192')
 
         options = ['32', '96', '128', '192', '256', '320']
 
@@ -176,28 +168,37 @@ class App(tk.Tk):
                                                              variable=self.normalize_audio_level_value)
         self.normalize_audio_level_checkbox.grid(row=3, column=1, padx=5, pady=2)
 
+        if self.save_handler.has_save('normalize_audio'):
+            self.normalize_audio_level_checkbox.select()
+
     def _check_settings(self):
         self.path_test_text = tk.Label(width=45, height=1, bg='gray', bd=0, fg='gray')
         self.path_test_text.config(text="testing path...")
-        self.path_test_text.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
+        self.path_test_text.grid(row=5, column=0, padx=5, pady=10, columnspan=2)
+
+        self.save_handler.set_save('audio_quality', self.audio_quality.get())
+
+        if self.normalize_audio_level_value.get() == 1:
+            self.save_handler.set_save('normalize_audio', '')
+        else:
+            self.save_handler.delete_save('normalize_audio')
 
         self.out_dir: str = self.path_input.contents.get()
 
-        with open('config.json', 'r') as f:
-            data = json.load(f)
         if self.save_path_value.get() == 1:
-            data["path"] = self.out_dir
+            self.save_handler.set_save("path", self.out_dir)
         else:
-            data["path"] = ""
+            self.save_handler.delete_save("path")
 
-        with open('config.json', 'w') as f:
-            json.dump(data, f)
-
-        if not self.out_dir[-1] == ("\\" or "/"):
-            if platform == "win32":
-                self.out_dir += "\\"
-            else:
-                self.out_dir += "/"
+        try:
+            if not self.out_dir[-1] == ("\\" or "/"):
+                if platform == "win32":
+                    self.out_dir += "\\"
+                else:
+                    self.out_dir += "/"
+        except IndexError:
+            self.path_test_text.config(text="no path input", fg='red')
+            return
 
         try:
             with open(self.out_dir + 'test.txt', 'w') as f:
