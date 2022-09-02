@@ -37,7 +37,8 @@ class Song:
                 self.genre = self.spotify.artist(song_track.album.artists[0].id).genres[0]
                 for genre in self.spotify.artist(song_track.album.artists[0].id).genres[1:]:
                     self.genre += " & " + genre
-            except:
+            except Exception as e:
+                print(e)
                 self.genre = "n/a"
 
             self.status = "waiting for download"
@@ -65,6 +66,8 @@ class Song:
         out_name = f'{self.album_artist} - {self.track_name}'
         out_name = out_name.replace("/", "")
         out_name = out_name.replace("\\", "")
+        out_name = out_name.replace('"', "")
+        out_name = out_name.replace("'", "")
 
         if not self.is_usable:
             time.sleep(0.1)
@@ -81,7 +84,8 @@ class Song:
             self.status = "searching on youtube"
             video_search = VideosSearch(f'{out_name} (audio)', limit=1)
             video_link = video_search.result()['result'][0]['link']
-        except:
+        except Exception as e:
+            print(e)
             self.status = "failed to search song"
             time.sleep(0.1)
             self.is_installed = True
@@ -96,7 +100,8 @@ class Song:
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([video_link])
-        except:
+        except Exception as e:
+            print(e)
             self.status = "failed to download song"
             time.sleep(0.1)
             self.is_installed = True
@@ -107,7 +112,8 @@ class Song:
                 self.status = "normalizing audio level"
                 time.sleep(0.1)
                 self.normalize_audio_level()
-            except:
+            except Exception as e:
+                print(e)
                 self.status = "failed to normalize audio level"
                 time.sleep(0.1)
                 self.is_installed = True
@@ -134,7 +140,8 @@ class Song:
             os.remove("cover.jpg")
 
             tag.save()
-        except:
+        except Exception as e:
+            print(e)
             self.status = "failed to add id3 tags"
             time.sleep(0.1)
             self.is_installed = True
@@ -143,7 +150,8 @@ class Song:
         try:
             self.status = "moving song to final folder"
             os.rename("temp_song.mp3", self.out_dir + out_name + r".mp3")
-        except:
+        except Exception as e:
+            print(e)
             self.status = "failed to move song to final directory"
             time.sleep(0.1)
             self.is_installed = True
