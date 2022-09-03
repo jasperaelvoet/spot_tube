@@ -215,20 +215,24 @@ class App(tk.Tk):
             self.path_test_text.config(text="invalid path OR path does not exist", fg='red')
 
     def _input_song_links(self):
+        self.geometry("550x300")
+
         for widgets in self.winfo_children():
             widgets.destroy()
 
-        self.text = tk.Text(bg='gray', bd=2, width=60, height=2, borderwidth=0)
-        self.text.insert("1.0", "enter your track/album/playlist \nlinks here, separated by enters")
-        self.text.grid(row=1, column=0, pady=10, padx=10)
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 255, 255)), bd=0,
+                        font=("Arial", 12, 'bold'), width=55,
+                        text="enter your track/album/playlist links here, separated by enters")
+        text.grid(row=1, column=0, columnspan=3, padx=5, pady=10)
 
-        self.song_links = tk.Text(bg='white', bd=2, width=70, height=16)
-        self.song_links.grid(row=2, column=0, pady=10, padx=10)
+        self.song_links = tk.Text(bd=2, height=12, width=80, bg=read_rgb((84, 84, 84)),
+                                  font=("Arial", 8, 'bold'), fg=read_rgb((0, 0, 0)))
+        self.song_links.grid(row=2, column=0, columnspan=3, pady=10, padx=10)
 
-        self.download_songs_button = \
-            tk.Button(text="download songs", bg="blue", fg="white", activebackground="blue4",
-                      activeforeground="white", height=1, width=25, command=self._get_songs)
-        self.download_songs_button.grid(row=3, column=0, columnspan=2, pady=10)
+        button = \
+            tk.Button(text="download songs", height=2, width=60, command=self._get_songs, bd=0,
+                      bg=read_rgb((84, 84, 84)), font=("Arial", 8, 'bold'), activebackground=read_rgb((64, 64, 64)))
+        button.grid(row=3, column=0, columnspan=3, pady=10)
 
     def move_grid_up(self):
         self.grid_row_pos -= 1
