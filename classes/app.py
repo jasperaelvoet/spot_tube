@@ -2,12 +2,17 @@ import os
 from threading import Thread
 import time
 import tkinter as tk
+
 from sys import platform
 
 import tekore
 
 from classes.save_handler import SaveHandler
 from classes.song import Song
+
+
+def read_rgb(rgb):
+    return "#%02x%02x%02x" % rgb
 
 
 class App(tk.Tk):
@@ -17,8 +22,8 @@ class App(tk.Tk):
         self.canvas = None
         self.color = "Black"
         self.thickness = 1
-        self.geometry("600x400")
-        self.configure(bg='gray')
+        self.geometry("500x200")
+        self.configure(bg=read_rgb((64, 64, 64)))
         self.iconbitmap('icon.ico')
         self.resizable(False, False)
 
@@ -27,79 +32,82 @@ class App(tk.Tk):
         self._create_spotify_api_widgets()
 
     def _create_spotify_api_widgets(self):
-        self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "connect to spotify API")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=0, column=0, columnspan=2, pady=10)
 
-        self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "client id: ")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=1, column=0, padx=5, pady=2)
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 255, 255)), bd=0,
+                        font=("Arial", 25, 'bold'), text="connect to spotify API")
+        text.grid(row=0, column=0, columnspan=3, pady=10)
 
-        self.client_id_input = tk.Entry(width=35)
+        text = tk.Label(width=12, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+                        font=("Arial", 12, 'bold'), text="client id: ")
+        text.grid(row=1, column=0, padx=5, pady=2)
+
+        self.client_id_value = tk.StringVar()
+        self.client_id_input = tk.Entry(width=35, textvariable=self.client_id_value, bg=read_rgb((84, 84, 84)),
+                                        bd=0, font=("Arial", 8, 'bold'), fg=read_rgb((0, 0, 0)))
         self.client_id_input.grid(row=1, column=1, padx=5, pady=2)
-        self.client_id_input.contents = tk.StringVar()
-        self.client_id_input["textvariable"] = self.client_id_input.contents
 
         if self.save_handler.has_save('id'):
-            self.client_id_input.contents.set(self.save_handler.get_save('id'))
+            self.client_id_value.set(self.save_handler.get_save('id'))
 
-        self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "client secret: ")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=2, column=0, padx=5, pady=2)
+        text = tk.Label(width=12, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+                        font=("Arial", 12, 'bold'), text="client secret: ")
+        text.grid(row=2, column=0, padx=5, pady=2)
 
-        self.client_secret_input = tk.Entry(width=35)
+        self.client_secret_value = tk.StringVar()
+        self.client_secret_input = tk.Entry(width=35, textvariable=self.client_secret_value, bg=read_rgb((84, 84, 84)),
+                                            bd=0, font=("Arial", 8, 'bold'), fg=read_rgb((0, 0, 0)))
         self.client_secret_input.grid(row=2, column=1, padx=5, pady=2)
-        self.client_secret_input.contents = tk.StringVar()
-        self.client_secret_input["textvariable"] = self.client_secret_input.contents
 
         if self.save_handler.has_save('secret'):
-            self.client_secret_input.contents.set(self.save_handler.get_save('secret'))
+            self.client_secret_value.set(self.save_handler.get_save('secret'))
 
         self.save_id_value = tk.IntVar()
-        self.save_id_checkbox = tk.Checkbutton(text="save client id", bg="gray", activebackground="gray",
-                                               variable=self.save_id_value)
+        self.save_id_checkbox = tk.Checkbutton(text="save client id", activebackground=read_rgb((64, 64, 64)),
+                                               variable=self.save_id_value, bg=read_rgb((64, 64, 64)),
+                                               font=("Arial", 8, 'bold'), fg=read_rgb((192, 192, 192)),
+                                               selectcolor=read_rgb((64, 64, 64)))
         self.save_id_checkbox.grid(row=1, column=2, padx=5, pady=2)
 
         if self.save_handler.has_save('id'):
             self.save_id_checkbox.select()
 
         self.save_secret_value = tk.IntVar()
-        self.save_secret_checkbox = tk.Checkbutton(text="save client secret", bg="gray", activebackground="gray",
-                                                   variable=self.save_secret_value)
+        self.save_secret_checkbox = tk.Checkbutton(text="save client secret", activebackground=read_rgb((64, 64, 64)),
+                                                   variable=self.save_secret_value, bg=read_rgb((64, 64, 64)),
+                                                   font=("Arial", 8, 'bold'), fg=read_rgb((192, 192, 192)),
+                                                   selectcolor=read_rgb((64, 64, 64)))
         self.save_secret_checkbox.grid(row=2, column=2, padx=5, pady=2)
 
         if self.save_handler.has_save('secret'):
             self.save_secret_checkbox.select()
 
         self.connect_to_spotify_api_button = \
-            tk.Button(text="connect", bg="blue", fg="white", activebackground="blue4",
-                      activeforeground="white", height=1, width=25, command=self._connect_to_spotify_api)
-        self.connect_to_spotify_api_button.grid(row=3, column=0, columnspan=2, pady=10)
+            tk.Button(text="connect", height=2, width=60, command=self._connect_to_spotify_api, bd=0,
+                      bg=read_rgb((84, 84, 84)), font=("Arial", 8, 'bold'), activebackground=read_rgb((64, 64, 64)))
+        self.connect_to_spotify_api_button.grid(row=3, column=0, columnspan=3, pady=10)
 
     def _connect_to_spotify_api(self):
-        self.connection_status_text = tk.Label(width=45, height=1, bg='gray', bd=0, fg='gray')
-        self.connection_status_text.config(text="connecting...")
-        self.connection_status_text.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
+        self.connection_status_text = tk.Label(width=45, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg='gray',
+                                               font=("Arial", 8, 'bold'), text="connecting...")
+        self.connection_status_text.grid(row=4, column=0, padx=5, pady=10, columnspan=3)
 
-        client_id: str = self.client_id_input.contents.get()
-        client_secret: str = self.client_secret_input.contents.get()
-
-        if self.save_id_value.get() == 1:
-            self.save_handler.set_save("id", client_id)
-        else:
-            self.save_handler.delete_save("id")
-
-        if self.save_secret_value.get() == 1:
-            self.save_handler.set_save("secret", client_secret)
-        else:
-            self.save_handler.delete_save("secret")
+        client_id: str = self.client_id_value.get()
+        client_secret: str = self.client_secret_value.get()
 
         try:
             app_token = tekore.request_client_token(client_id, client_secret)
             self.spotify = tekore.Spotify(app_token)
+
+            if self.save_id_value.get() == 1:
+                self.save_handler.set_save("id", client_id)
+            else:
+                self.save_handler.delete_save("id")
+
+            if self.save_secret_value.get() == 1:
+                self.save_handler.set_save("secret", client_secret)
+            else:
+                self.save_handler.delete_save("secret")
+
             self._set_path()
         except tekore.BadRequest:
             self.connection_status_text.config(text="failed to connect, check your client id and secret", fg='red')
@@ -143,7 +151,6 @@ class App(tk.Tk):
         self.text.insert("1.0", "audio quality:")
         self.text['state'] = 'disabled'
         self.text.grid(row=2, column=0, padx=5, pady=2)
-
 
         if self.save_handler.has_save('audio_quality'):
             self.audio_quality = tk.StringVar(self, value=self.save_handler.get_save('audio_quality'))
@@ -328,4 +335,3 @@ class App(tk.Tk):
             time.sleep(0.1)
             song_pair[1].config(text=song_pair[0].status)
             grid_move_delay += 1
-
