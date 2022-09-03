@@ -22,7 +22,7 @@ class App(tk.Tk):
         self.canvas = None
         self.color = "Black"
         self.thickness = 1
-        self.geometry("500x200")
+        self.geometry("550x200")
         self.configure(bg=read_rgb((64, 64, 64)))
         self.iconbitmap('icon.ico')
         self.resizable(False, False)
@@ -37,7 +37,7 @@ class App(tk.Tk):
                         font=("Arial", 25, 'bold'), text="connect to spotify API")
         text.grid(row=0, column=0, columnspan=3, pady=10)
 
-        text = tk.Label(width=12, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+        text = tk.Label(width=15, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
                         font=("Arial", 12, 'bold'), text="client id: ")
         text.grid(row=1, column=0, padx=5, pady=2)
 
@@ -49,7 +49,7 @@ class App(tk.Tk):
         if self.save_handler.has_save('id'):
             self.client_id_value.set(self.save_handler.get_save('id'))
 
-        text = tk.Label(width=12, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+        text = tk.Label(width=15, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
                         font=("Arial", 12, 'bold'), text="client secret: ")
         text.grid(row=2, column=0, padx=5, pady=2)
 
@@ -81,10 +81,10 @@ class App(tk.Tk):
         if self.save_handler.has_save('secret'):
             self.save_secret_checkbox.select()
 
-        self.connect_to_spotify_api_button = \
+        button = \
             tk.Button(text="connect", height=2, width=60, command=self._connect_to_spotify_api, bd=0,
                       bg=read_rgb((84, 84, 84)), font=("Arial", 8, 'bold'), activebackground=read_rgb((64, 64, 64)))
-        self.connect_to_spotify_api_button.grid(row=3, column=0, columnspan=3, pady=10)
+        button.grid(row=3, column=0, columnspan=3, pady=10)
 
     def _connect_to_spotify_api(self):
         self.connection_status_text = tk.Label(width=45, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg='gray',
@@ -113,44 +113,45 @@ class App(tk.Tk):
             self.connection_status_text.config(text="failed to connect, check your client id and secret", fg='red')
 
     def _set_path(self):
+        self.geometry("550x230")
+
         for widgets in self.winfo_children():
             widgets.destroy()
 
-        self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "set up paths")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=0, column=0, columnspan=2, pady=10)
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 255, 255)), bd=0,
+                        font=("Arial", 25, 'bold'), text="configure download")
+        text.grid(row=0, column=0, columnspan=3, pady=10)
 
-        self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "path to output folder:")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=1, column=0, padx=5, pady=2)
+        text = tk.Label(width=15, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+                        font=("Arial", 12, 'bold'), text="output folder: ")
+        text.grid(row=1, column=0, padx=5, pady=2)
 
-        self.path_input = tk.Entry(width=35)
+        self.path_value = tk.StringVar()
+        self.path_input = tk.Entry(width=45, textvariable=self.path_value, bg=read_rgb((84, 84, 84)),
+                                   bd=0, font=("Arial", 8, 'bold'), fg=read_rgb((0, 0, 0)))
         self.path_input.grid(row=1, column=1, padx=5, pady=2)
-        self.path_input.contents = tk.StringVar()
-        self.path_input["textvariable"] = self.path_input.contents
 
         if self.save_handler.has_save('path'):
-            self.path_input.contents.set(self.save_handler.get_save('path'))
+            self.path_value.set(self.save_handler.get_save('path'))
 
         self.save_path_value = tk.IntVar()
-        self.save_path_checkbox = tk.Checkbutton(text="save path", bg="gray", activebackground="gray",
-                                                 variable=self.save_path_value)
+        self.save_path_checkbox = tk.Checkbutton(text="save path", activebackground=read_rgb((64, 64, 64)),
+                                                 variable=self.save_path_value, bg=read_rgb((64, 64, 64)),
+                                                 font=("Arial", 8, 'bold'), fg=read_rgb((192, 192, 192)),
+                                                 selectcolor=read_rgb((64, 64, 64)))
         self.save_path_checkbox.grid(row=1, column=2, padx=5, pady=2)
 
         if self.save_handler.has_save('path'):
             self.save_path_checkbox.select()
 
-        self.test_path_button = \
-            tk.Button(text="select", bg="blue", fg="white", activebackground="blue4",
-                      activeforeground="white", height=1, width=25, command=self._check_settings)
-        self.test_path_button.grid(row=4, column=0, columnspan=2, pady=10)
+        button = \
+            tk.Button(text="continue", height=2, width=60, command=self._check_settings, bd=0,
+                      bg=read_rgb((84, 84, 84)), font=("Arial", 8, 'bold'), activebackground=read_rgb((64, 64, 64)))
+        button.grid(row=4, column=0, columnspan=3, pady=10)
 
-        self.text = tk.Text(width=15, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "audio quality:")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=2, column=0, padx=5, pady=2)
+        text = tk.Label(width=15, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+                        font=("Arial", 12, 'bold'), text="audio quality: ")
+        text.grid(row=2, column=0, padx=5, pady=2)
 
         if self.save_handler.has_save('audio_quality'):
             self.audio_quality = tk.StringVar(self, value=self.save_handler.get_save('audio_quality'))
@@ -162,23 +163,24 @@ class App(tk.Tk):
         self.audio_quality_option_menu = tk.OptionMenu(self, self.audio_quality, *options)
         self.audio_quality_option_menu.grid(row=2, column=1)
 
-        self.text = tk.Text(width=25, height=1, bg='gray', bd=0)
-        self.text.insert("1.0", "normalize audio level:")
-        self.text['state'] = 'disabled'
-        self.text.grid(row=3, column=0, padx=5, pady=2)
+        text = tk.Label(width=15, height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((192, 192, 192)), bd=0,
+                        font=("Arial", 12, 'bold'), text="normalize audio: ")
+        text.grid(row=3, column=0, padx=5, pady=2)
 
         self.normalize_audio_level_value = tk.IntVar()
-        self.normalize_audio_level_checkbox = tk.Checkbutton(text="(recommended)", bg="gray", activebackground="gray",
-                                                             variable=self.normalize_audio_level_value)
+        self.normalize_audio_level_checkbox = \
+            tk.Checkbutton(text="(recommended)", activebackground=read_rgb((64, 64, 64)),
+                           variable=self.normalize_audio_level_value, bg=read_rgb((64, 64, 64)),
+                           font=("Arial", 8, 'bold'), fg=read_rgb((192, 192, 192)), selectcolor=read_rgb((64, 64, 64)))
         self.normalize_audio_level_checkbox.grid(row=3, column=1, padx=5, pady=2)
 
         if self.save_handler.has_save('normalize_audio'):
             self.normalize_audio_level_checkbox.select()
 
     def _check_settings(self):
-        self.path_test_text = tk.Label(width=45, height=1, bg='gray', bd=0, fg='gray')
-        self.path_test_text.config(text="testing path...")
-        self.path_test_text.grid(row=5, column=0, padx=5, pady=10, columnspan=2)
+        self.path_test_text = tk.Label(width=45, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg='gray',
+                                       font=("Arial", 8, 'bold'), text="testing path...")
+        self.path_test_text.grid(row=5, column=0, padx=5, pady=10, columnspan=3)
 
         self.save_handler.set_save('audio_quality', self.audio_quality.get())
 
@@ -187,12 +189,7 @@ class App(tk.Tk):
         else:
             self.save_handler.delete_save('normalize_audio')
 
-        self.out_dir: str = self.path_input.contents.get()
-
-        if self.save_path_value.get() == 1:
-            self.save_handler.set_save("path", self.out_dir)
-        else:
-            self.save_handler.delete_save("path")
+        self.out_dir: str = self.path_value.get()
 
         try:
             if not self.out_dir[-1] == ("\\" or "/"):
@@ -205,12 +202,17 @@ class App(tk.Tk):
             return
 
         try:
-            with open(self.out_dir + 'test.txt', 'w') as f:
-                f.write('testing path')
-            os.remove(self.out_dir + 'test.txt')
+            if not os.path.exists(self.out_dir):
+                raise OSError
+
+            if self.save_path_value.get() == 1:
+                self.save_handler.set_save("path", self.out_dir)
+            else:
+                self.save_handler.delete_save("path")
+
             self._input_song_links()
         except OSError:
-            self.path_test_text.config(text="invalid path", fg='red')
+            self.path_test_text.config(text="invalid path OR path does not exist", fg='red')
 
     def _input_song_links(self):
         for widgets in self.winfo_children():
