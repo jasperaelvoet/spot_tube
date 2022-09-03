@@ -7,8 +7,8 @@ import yt_dlp
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
 from pydub import AudioSegment
-from youtubesearchpython import VideosSearch
 
+from classes.youtube_search import search_video
 
 class Song:
     def __init__(self, song_link, out_dir, audio_quality, spotify, do_audio_normalization):
@@ -84,8 +84,7 @@ class Song:
 
         try:
             self.status = "searching on youtube"
-            video_search = VideosSearch(f'{out_name} (audio)', limit=1)
-            video_link = video_search.result()['result'][0]['link']
+            video_link = search_video(f'{out_name} (audio)')
         except Exception as e:
             print(e)
             self.status = "failed to search song"
