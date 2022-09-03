@@ -225,7 +225,7 @@ class App(tk.Tk):
                         text="enter your track/album/playlist links here, separated by enters")
         text.grid(row=1, column=0, columnspan=3, padx=5, pady=10)
 
-        self.song_links = tk.Text(bd=2, height=12, width=80, bg=read_rgb((84, 84, 84)),
+        self.song_links = tk.Text(bd=0, height=12, width=80, bg=read_rgb((84, 84, 84)),
                                   font=("Arial", 8, 'bold'), fg=read_rgb((0, 0, 0)))
         self.song_links.grid(row=2, column=0, columnspan=3, pady=10, padx=10)
 
@@ -310,18 +310,18 @@ class App(tk.Tk):
             song = Song(song_link, self.out_dir, self.audio_quality.get(),
                         self.spotify, self.normalize_audio_level_value.get())
 
-            text = tk.Label(width=30, height=1, bg='gray', bd=0, fg='black',
-                            text=f'{song.album_artist} - {song.track_name}')
-            text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=0, padx=5, pady=10)
+            text = tk.Label(width=50, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
+                            text=f'{song.album_artist} - {song.track_name}', font=("Arial", 8, 'bold'))
+            text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=0,
+                      columnspan=2, padx=5, pady=10)
 
-            song_status_text = tk.Label(width=50, height=1, bg='gray', bd=0, fg='black',
-                                        text=song.status)
-            song_status_text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos,
-                                  column=1, padx=5, pady=10)
+            song_status_text = tk.Label(width=20, height=1, bg=read_rgb((64, 64, 64)), bd=0,
+                                        fg=read_rgb((192, 192, 192)), text=song.status, font=("Arial", 8, 'bold'))
+            song_status_text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=2, padx=5, pady=10)
 
             song_list.append([song, song_status_text])
 
-            if self.song_id_list.index(song_link) + self.grid_row_pos > 10:
+            if self.song_id_list.index(song_link) + self.grid_row_pos > 7:
                 self.move_grid_up()
 
             time.sleep(.2)
@@ -331,13 +331,21 @@ class App(tk.Tk):
 
         grid_move_delay: int = 0
         for song_pair in song_list:
-            if grid_move_delay >= 4 and song_list.index(song_pair) + self.grid_row_pos > 8:
+            if grid_move_delay >= 6:
                 self.move_grid_up()
 
-            Thread(target=song_pair[0].download_song(), daemon=True).start()
+            Thread(target=song_pair[0].download_song).start()
 
-            while not song_pair[0].is_installed:
+            song_pair[1].config(fg=read_rgb((255, 255, 0)))
+
+            while not (song_pair[0].successfully_installed or song_pair[0].failed_install):
                 song_pair[1].config(text=song_pair[0].status)
+                time.sleep(.1)
+
             time.sleep(0.1)
             song_pair[1].config(text=song_pair[0].status)
+            if song_pair[0].failed_install:
+                song_pair[1].config(fg=read_rgb((255, 0, 0)))
+            elif song_pair[0].successfully_installed:
+                song_pair[1].config(fg=read_rgb((0, 255, 0)))
             grid_move_delay += 1

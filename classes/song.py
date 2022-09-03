@@ -43,13 +43,15 @@ class Song:
 
             self.status = "waiting for download"
             self.is_usable = True
-            self.is_installed = False
+            self.successfully_installed = False
+            self.failed_install = False
 
         except tekore.BadRequest:
             self.status = "invalid id"
             self.album_artist = "n/a"
             self.track_name = "n/a"
             self.is_usable = False
+            self.failed_install = True
 
     @staticmethod
     def match_target_amplitude(sound, target_dBFS):
@@ -71,13 +73,13 @@ class Song:
 
         if not self.is_usable:
             time.sleep(0.1)
-            self.is_installed = True
+            self.failed_install = True
             return
 
         if os.path.exists(self.out_dir + out_name + r".mp3"):
             self.status = "already installed"
             time.sleep(0.1)
-            self.is_installed = True
+            self.successfully_installed = True
             return
 
         try:
@@ -88,7 +90,7 @@ class Song:
             print(e)
             self.status = "failed to search song"
             time.sleep(0.1)
-            self.is_installed = True
+            self.failed_install = True
             return
 
         try:
@@ -104,7 +106,7 @@ class Song:
             print(e)
             self.status = "failed to download song"
             time.sleep(0.1)
-            self.is_installed = True
+            self.failed_install = True
             return
 
         if self.do_audio_normalization == 1:
@@ -116,7 +118,7 @@ class Song:
                 print(e)
                 self.status = "failed to normalize audio level"
                 time.sleep(0.1)
-                self.is_installed = True
+                self.failed_install = True
                 return
 
         try:
@@ -144,7 +146,7 @@ class Song:
             print(e)
             self.status = "failed to add id3 tags"
             time.sleep(0.1)
-            self.is_installed = True
+            self.failed_install = True
             return
 
         try:
@@ -154,10 +156,10 @@ class Song:
             print(e)
             self.status = "failed to move song to final directory"
             time.sleep(0.1)
-            self.is_installed = True
+            self.failed_install = True
             return
 
         self.status = "installed"
         time.sleep(0.1)
-        self.is_installed = True
+        self.successfully_installed = True
         return
