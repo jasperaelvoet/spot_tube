@@ -5,10 +5,9 @@ import tkinter as tk
 
 from sys import platform
 
-import tekore
-
 from classes.save_handler import SaveHandler
 from classes.song import Song
+import classes.spotify as spotify
 
 
 def read_rgb(rgb):
@@ -95,8 +94,7 @@ class App(tk.Tk):
         client_secret: str = self.client_secret_value.get()
 
         try:
-            app_token = tekore.request_client_token(client_id, client_secret)
-            self.spotify = tekore.Spotify(app_token)
+            self.access_token = spotify.get_acces_token(client_id, client_secret)
 
             if self.save_id_value.get() == 1:
                 self.save_handler.set_save("id", client_id)
@@ -109,7 +107,7 @@ class App(tk.Tk):
                 self.save_handler.delete_save("secret")
 
             self._set_path()
-        except tekore.BadRequest:
+        except KeyError:
             self.connection_status_text.config(text="failed to connect, check your client id and secret", fg='red')
 
     def _set_path(self):
@@ -282,18 +280,18 @@ class App(tk.Tk):
         song_ids = []
         for link in links:
             if "track" in link:
-                track_id = link.replace("https://open.spotify.com/track/", "")
+                track_id = link.replace("https://open.spotify.com/track/", "").split("?")[0]
                 song_ids.append(track_id)
             if "album" in link:
-                album_id = link.replace("https://open.spotify.com/album/", "")
-                album = self.spotify.album(album_id)
-                for track in album.tracks.items:
-                    song_ids.append(track.id)
+                album_id = link.replace("https://open.spotify.com/album/", "").split("?")[0]
+                album = spotify.get_album(self.access_token, album_id)
+                for i in album['tracks']['items']:
+                    song_ids.append(i['id'])
             if "playlist" in link:
-                playlist_id = link.replace("https://open.spotify.com/playlist/", "")
-                playlist = self.spotify.playlist(playlist_id)
-                for track in playlist.tracks.items:
-                    song_ids.append(track.track.id)
+                playlist_id = link.replace("https://open.spotify.com/playlist/", "").split("?")[0]
+                playlist = spotify.get_playlist(self.access_token, playlist_id)
+                for i in playlist['tracks']['items']:
+                    song_ids.append(i['id'])
         return song_ids
 
     def _song_download_handler(self):
@@ -308,7 +306,7 @@ class App(tk.Tk):
 
         for song_link in self.song_id_list:
             song = Song(song_link, self.out_dir, self.audio_quality.get(),
-                        self.spotify, self.normalize_audio_level_value.get())
+                        self.access_token, self.normalize_audio_level_value.get())
 
             text = tk.Label(width=50, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
                             text=f'{song.album_artist} - {song.track_name}', font=("Arial", 8, 'bold'))

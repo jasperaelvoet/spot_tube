@@ -2,40 +2,41 @@ import os
 import time
 from urllib import request
 
-import tekore
 import yt_dlp
 from eyed3 import id3
 from eyed3.id3.frames import ImageFrame
 from pydub import AudioSegment
 
 from classes.youtube_search import search_video
+import classes.spotify as spotify
+
 
 class Song:
-    def __init__(self, song_link, out_dir, audio_quality, spotify, do_audio_normalization):
-        self.spotify = spotify
+    def __init__(self, song_id, out_dir, audio_quality, access_token, do_audio_normalization):
         self.audio_quality = audio_quality
         self.out_dir = out_dir
         self.do_audio_normalization = do_audio_normalization
 
         try:
-            song_track = self.spotify.track(song_link)
+            track = spotify.get_track(access_token, song_id)
 
-            self.track_artist = song_track.artists[0].name
-            for artists in song_track.artists[1:]:
-                self.track_artist += " & " + artists.name
+            self.track_artist = track['artists'][0]['name']
+            for artist in track['artists'][1:]:
+                self.track_artist += " & " + artist['name']
 
-            self.album_name = song_track.album.name
-            self.track_name = song_track.name
-            self.album_artist = song_track.album.artists[0].name
-            self.artist_url = song_track.artists[0].external_urls.get("spotify")
-            self.release_date = song_track.album.release_date
-            self.cover_art_url = song_track.album.images[0].url
-            self.disc_num = song_track.disc_number
-            self.track_num = song_track.track_number
+
+            self.album_name = track['album']['name']
+            self.track_name = track['name']
+            self.album_artist = track['album']['artists'][0]['name']
+            self.artist_url = track['album']['artists'][0]['external_urls']["spotify"]
+            self.release_date = track['album']['release_date']
+            self.cover_art_url = track['album']['images'][0]['url']
+            self.disc_num = track['disc_number']
+            self.track_num = track['track_number']
 
             try:
-                self.genre = self.spotify.artist(song_track.album.artists[0].id).genres[0]
-                for genre in self.spotify.artist(song_track.album.artists[0].id).genres[1:]:
+                self.genre = spotify.get_artist(access_token, track['artists'][0]['id'])['genres'][0]
+                for genre in spotify.get_artist(access_token, track['artists'][0]['id'])['genres'][1:]:
                     self.genre += " & " + genre
             except Exception as e:
                 print(e)
@@ -46,7 +47,7 @@ class Song:
             self.successfully_installed = False
             self.failed_install = False
 
-        except tekore.BadRequest:
+        except:
             self.status = "invalid id"
             self.album_artist = "n/a"
             self.track_name = "n/a"
