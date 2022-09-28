@@ -322,8 +322,6 @@ class App(tk.Tk):
             if self.song_id_list.index(song_link) + self.grid_row_pos > 7:
                 self.move_grid_up()
 
-            time.sleep(.2)
-
         for i in range(0, self.grid_row_pos, -1):
             self.move_grid_down()
 
