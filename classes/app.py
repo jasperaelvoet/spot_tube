@@ -94,7 +94,7 @@ class App(tk.Tk):
         client_secret: str = self.client_secret_value.get()
 
         try:
-            self.access_token = spotify.get_acces_token(client_id, client_secret)
+            self.access_token = spotify.get_access_token(client_id, client_secret)
 
             if self.save_id_value.get() == 1:
                 self.save_handler.set_save("id", client_id)
