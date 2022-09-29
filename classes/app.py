@@ -334,6 +334,10 @@ class App(tk.Tk):
             self.move_grid_down()
 
         grid_move_delay: int = 0
+
+        self.downloads_successful = 0
+        self.downloads_failed = 0
+
         for song_pair in song_list:
             if grid_move_delay >= 6:
                 self.move_grid_up()
@@ -350,6 +354,35 @@ class App(tk.Tk):
             song_pair[1].config(text=song_pair[0].status)
             if song_pair[0].failed_install:
                 song_pair[1].config(fg=read_rgb((255, 0, 0)))
+                self.downloads_failed += 1
             elif song_pair[0].successfully_installed:
                 song_pair[1].config(fg=read_rgb((0, 255, 0)))
+                self.downloads_successful += 1
             grid_move_delay += 1
+
+        self._summary()
+
+    def _summary(self):
+        self.geometry("550x200")
+
+        for widgets in self.winfo_children():
+            widgets.destroy()
+
+        text = tk.Label(height=1, width=55, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 255, 255)), bd=0,
+                        font=("Arial", 12, 'bold'), text="downloads completed")
+        text.grid(row=0, column=0, columnspan=3, pady=10)
+
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((0, 255, 0)), bd=0,
+                        font=("Arial", 12, 'bold'), width=10,
+                        text=f"Successful: {self.downloads_successful}")
+        text.grid(row=1, column=0, columnspan=3, padx=5, pady=10)
+
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 0, 0)), bd=0,
+                        font=("Arial", 12, 'bold'), width=10,
+                        text=f"Failed: {self.downloads_failed}")
+        text.grid(row=2, column=0, columnspan=3, padx=5, pady=10)
+
+        text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((0, 0, 255)), bd=0,
+                        font=("Arial", 12, 'bold'), width=10,
+                        text=f"Total: {self.downloads_failed + self.downloads_successful}")
+        text.grid(row=3, column=0, columnspan=3, padx=5, pady=10)
