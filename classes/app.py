@@ -220,7 +220,7 @@ class App(tk.Tk):
 
         text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 255, 255)), bd=0,
                         font=("Arial", 12, 'bold'), width=55,
-                        text="enter your track/album/playlist links here, separated by enters")
+                        text="enter your track/album/playlist/artist links here, separated by enters")
         text.grid(row=1, column=0, columnspan=3, padx=5, pady=10)
 
         self.song_links = tk.Text(bd=0, height=12, width=80, bg=read_rgb((84, 84, 84)),
@@ -292,6 +292,15 @@ class App(tk.Tk):
                 playlist = spotify.get_playlist(self.access_token, playlist_id)
                 for i in playlist['tracks']['items']:
                     song_ids.append(i['id'])
+            if "artist" in link:
+                artist_id = link.replace("https://open.spotify.com/artist/", "").split("?")[0]
+                artist = spotify.get_artist_albums(self.access_token, artist_id)
+                print(artist)
+                for a in artist['items']:
+                    album_id = a['uri'].replace('spotify:album:', "")
+                    album = spotify.get_album(self.access_token, album_id)
+                    for s in album['tracks']['items']:
+                        song_ids.append(s['id'])
         return song_ids
 
     def _song_download_handler(self):
@@ -302,7 +311,6 @@ class App(tk.Tk):
 
         self.song_id_list = self.get_all_song_links(self.links_list)
 
-        time.sleep(1)
 
         for song_link in self.song_id_list:
             song = Song(song_link, self.out_dir, self.audio_quality.get(),

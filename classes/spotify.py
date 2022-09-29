@@ -74,3 +74,8 @@ def get_track(access_token, track):
 def get_artist(access_token, artist):
     response = post_api_request(access_token, f'artists/{artist}')
     return json.loads(response.content)
+
+
+def get_artist_albums(access_token, artist):
+    response = post_api_request(access_token, f'artists/{artist}/albums')
+    return json.loads(response.content)
