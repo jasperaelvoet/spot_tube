@@ -1,6 +1,6 @@
 import os
-from threading import Thread
 import time
+from threading import Thread
 import tkinter as tk
 
 from sys import platform
@@ -295,7 +295,6 @@ class App(tk.Tk):
             if "artist" in link:
                 artist_id = link.replace("https://open.spotify.com/artist/", "").split("?")[0]
                 artist = spotify.get_artist_albums(self.access_token, artist_id)
-                print(artist)
                 for a in artist['items']:
                     album_id = a['uri'].replace('spotify:album:', "")
                     album = spotify.get_album(self.access_token, album_id)
@@ -303,64 +302,90 @@ class App(tk.Tk):
                         song_ids.append(s['id'])
         return song_ids
 
+    def _add_song_to_display(self, song_link):
+        song = Song(song_link, self.out_dir, self.audio_quality.get(),
+                    self.access_token, self.normalize_audio_level_value.get())
+
+        list_index = self.song_id_list.index(song_link)
+
+
+        row_pos: int = list_index + self.grid_row_pos
+
+        text = tk.Label(width=50, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
+                        text=f'{song.album_artist} - {song.track_name}', font=("Arial", 8, 'bold'))
+        text.grid(row=row_pos, column=0,
+                  columnspan=2, padx=5, pady=10)
+
+        song_status_text = tk.Label(width=20, height=1, bg=read_rgb((64, 64, 64)), bd=0,
+                                    fg=read_rgb((192, 192, 192)), text=song.status, font=("Arial", 8, 'bold'))
+        song_status_text.grid(row=row_pos, column=2, padx=5, pady=10)
+
+        self.song_list.append([song, song_status_text])
+
+    def _handle_updatable_download(self, song_pair):
+        Thread(target=song_pair[0].download_song).start()
+
+        song_pair[1].config(fg=read_rgb((0, 0, 255)))
+
+        while not (song_pair[0].successfully_installed or song_pair[0].failed_install):
+            song_pair[1].config(text=song_pair[0].status)
+
+        song_pair[1].config(text=song_pair[0].status)
+        if song_pair[0].failed_install:
+            song_pair[1].config(fg=read_rgb((255, 0, 0)))
+            self.downloads_failed += 1
+        elif song_pair[0].successfully_installed:
+            song_pair[1].config(fg=read_rgb((0, 255, 0)))
+            self.downloads_successful += 1
+
     def _song_download_handler(self):
         self.grid_row_pos = 0
-        song_list: list = []
+        self.song_list: list = []
 
         self.row = {}
 
         self.song_id_list = self.get_all_song_links(self.links_list)
-
-
-        for song_link in self.song_id_list:
-            song = Song(song_link, self.out_dir, self.audio_quality.get(),
-                        self.access_token, self.normalize_audio_level_value.get())
-
-            text = tk.Label(width=50, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
-                            text=f'{song.album_artist} - {song.track_name}', font=("Arial", 8, 'bold'))
-            text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=0,
-                      columnspan=2, padx=5, pady=10)
-
-            song_status_text = tk.Label(width=20, height=1, bg=read_rgb((64, 64, 64)), bd=0,
-                                        fg=read_rgb((192, 192, 192)), text=song.status, font=("Arial", 8, 'bold'))
-            song_status_text.grid(row=self.song_id_list.index(song_link) + self.grid_row_pos, column=2, padx=5, pady=10)
-
-            song_list.append([song, song_status_text])
-
-            if self.song_id_list.index(song_link) + self.grid_row_pos > 7:
-                self.move_grid_up()
-
-        for i in range(0, self.grid_row_pos, -1):
-            self.move_grid_down()
 
         grid_move_delay: int = 0
 
         self.downloads_successful = 0
         self.downloads_failed = 0
 
-        for song_pair in song_list:
-            if grid_move_delay >= 6:
-                self.move_grid_up()
+        current_downloading_song: int = 0
 
-            Thread(target=song_pair[0].download_song).start()
+        # load first 10 songs
+        for song_link in self.song_id_list[:10]:
+            self._add_song_to_display(song_link)
 
-            song_pair[1].config(fg=read_rgb((255, 255, 0)))
-
-            while not (song_pair[0].successfully_installed or song_pair[0].failed_install):
-                song_pair[1].config(text=song_pair[0].status)
-                time.sleep(.1)
-
-            time.sleep(0.1)
-            song_pair[1].config(text=song_pair[0].status)
-            if song_pair[0].failed_install:
-                song_pair[1].config(fg=read_rgb((255, 0, 0)))
-                self.downloads_failed += 1
-            elif song_pair[0].successfully_installed:
-                song_pair[1].config(fg=read_rgb((0, 255, 0)))
-                self.downloads_successful += 1
-            grid_move_delay += 1
-
-        self._summary()
+        # download all songs if less than 10
+        if len(self.song_id_list) < 10:
+            for _ in range(len(self.song_id_list)):
+                song_pair = self.song_list[current_downloading_song]
+                if grid_move_delay >= 6:
+                    self.move_grid_up()
+                self._handle_updatable_download(song_pair)
+                current_downloading_song += 1
+                grid_move_delay += 1
+            return self._summary()
+        else:
+            # download songs and load new one until 10 left
+            for song_link in self.song_id_list[10:]:
+                self._add_song_to_display(song_link)
+                song_pair = self.song_list[current_downloading_song]
+                if grid_move_delay >= 6:
+                    self.move_grid_up()
+                self._handle_updatable_download(song_pair)
+                current_downloading_song += 1
+                grid_move_delay += 1
+            # download last 10 songs that have already been loaded
+            for _ in range(10):
+                song_pair = self.song_list[current_downloading_song]
+                if grid_move_delay >= 6:
+                    self.move_grid_up()
+                self._handle_updatable_download(song_pair)
+                current_downloading_song += 1
+                grid_move_delay += 1
+            return self._summary()
 
     def _summary(self):
         self.geometry("550x200")
@@ -373,16 +398,16 @@ class App(tk.Tk):
         text.grid(row=0, column=0, columnspan=3, pady=10)
 
         text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((0, 255, 0)), bd=0,
-                        font=("Arial", 12, 'bold'), width=10,
+                        font=("Arial", 12, 'bold'), width=15,
                         text=f"Successful: {self.downloads_successful}")
         text.grid(row=1, column=0, columnspan=3, padx=5, pady=10)
 
         text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((255, 0, 0)), bd=0,
-                        font=("Arial", 12, 'bold'), width=10,
+                        font=("Arial", 12, 'bold'), width=15,
                         text=f"Failed: {self.downloads_failed}")
         text.grid(row=2, column=0, columnspan=3, padx=5, pady=10)
 
         text = tk.Label(height=1, bg=read_rgb((64, 64, 64)), fg=read_rgb((0, 0, 255)), bd=0,
-                        font=("Arial", 12, 'bold'), width=10,
+                        font=("Arial", 12, 'bold'), width=15,
                         text=f"Total: {self.downloads_failed + self.downloads_successful}")
         text.grid(row=3, column=0, columnspan=3, padx=5, pady=10)
