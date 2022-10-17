@@ -166,22 +166,3 @@ class Song:
         time.sleep(0.1)
         self.successfully_installed = True
         return
-
-
-class MyLogger:
-    def debug(self, msg):
-        # For compatibility with youtube-dl, both debug and info are passed into debug
-        # You can distinguish them by the prefix '[debug] '
-        if msg.startswith('[debug] '):
-            print(msg)
-        else:
-            self.info(msg)
-
-    def info(self, msg):
-        print(msg)
-
-    def warning(self, msg):
-        print(msg)
-
-    def error(self, msg):
-        print(msg)
