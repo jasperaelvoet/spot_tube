@@ -311,12 +311,12 @@ class App(tk.Tk):
 
         row_pos: int = list_index + self.grid_row_pos
 
-        text = tk.Label(width=50, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
+        text = tk.Label(width=35, height=1, bg=read_rgb((64, 64, 64)), bd=0, fg=read_rgb((192, 192, 192)),
                         text=f'{song.album_artist} - {song.track_name}', font=("Arial", 8, 'bold'))
         text.grid(row=row_pos, column=0,
                   columnspan=2, padx=5, pady=10)
 
-        song_status_text = tk.Label(width=20, height=1, bg=read_rgb((64, 64, 64)), bd=0,
+        song_status_text = tk.Label(width=35, height=1, bg=read_rgb((64, 64, 64)), bd=0,
                                     fg=read_rgb((192, 192, 192)), text=song.status, font=("Arial", 8, 'bold'))
         song_status_text.grid(row=row_pos, column=2, padx=5, pady=10)
 
