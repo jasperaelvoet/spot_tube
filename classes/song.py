@@ -24,7 +24,6 @@ class Song:
             for artist in track['artists'][1:]:
                 self.track_artist += " & " + artist['name']
 
-
             self.album_name = track['album']['name']
             self.track_name = track['name']
             self.album_artist = track['album']['artists'][0]['name']
@@ -64,6 +63,9 @@ class Song:
         normalized_sound = self.match_target_amplitude(sound, -20.0)
         normalized_sound.export("temp_song.mp3", format="mp3", bitrate=self.audio_quality + 'k')
 
+    def progress(self, d):
+        self.status = d['_default_template']
+
     def download_song(self):
         self.status = "checking if already installed"
         out_name = f'{self.album_artist} - {self.track_name}'
@@ -99,6 +101,7 @@ class Song:
                 'postprocessors': [{'key': 'FFmpegExtractAudio',
                                     'preferredcodec': 'mp3', 'preferredquality': self.audio_quality}],
                 'outtmpl': 'temp_song',
+                'progress_hooks': [self.progress],
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([video_link])
@@ -163,3 +166,22 @@ class Song:
         time.sleep(0.1)
         self.successfully_installed = True
         return
+
+
+class MyLogger:
+    def debug(self, msg):
+        # For compatibility with youtube-dl, both debug and info are passed into debug
+        # You can distinguish them by the prefix '[debug] '
+        if msg.startswith('[debug] '):
+            print(msg)
+        else:
+            self.info(msg)
+
+    def info(self, msg):
+        print(msg)
+
+    def warning(self, msg):
+        print(msg)
+
+    def error(self, msg):
+        print(msg)
