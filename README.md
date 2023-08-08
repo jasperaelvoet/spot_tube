@@ -1,3 +1,4 @@
+Not Maintained
 > # spot_tube
 [![release](https://img.shields.io/github/release/jasperaelvoet/spot_tube.svg?style=flat)](https://github.com/jasperaelvoet/spot_tube/releases/latest)
 [![downloads](https://img.shields.io/github/downloads/jasperaelvoet/spot_tube/total)](https://github.com/jasperaelvoet/spot_tube/)  
